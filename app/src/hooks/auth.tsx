@@ -3,28 +3,34 @@ import React, {
   useCallback,
   useState,
   useContext,
-  useEffect
+  useEffect,
 } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import api from '../services/api';
 import { PromiseTask } from 'react-native';
 
+interface IUser {
+  id: string;
+  avatar_url: string;
+  name: string;
+  email: string;
+}
 interface AuthState {
   token: string;
-  user: object;
+  user: IUser;
 }
-interface SignInCreadentias {
+interface SignInCredentials {
   email: string;
   password: string;
 }
-interface AuthContextaData {
-  user: object;
+interface AuthContextData {
+  user: IUser;
   loading: boolean;
-  signIn(creadencials: SignInCreadentias): Promise<void>;
+  signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
 }
 
-const AuthContext = createContext<AuthContextaData>({} as AuthContextaData);
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider: React.FC = ({ children }) => {
   const [data, setData] = useState<AuthState>({} as AuthState);
@@ -34,8 +40,8 @@ export const AuthProvider: React.FC = ({ children }) => {
     async function loadStorageData(): Promise<void> {
       const [token, user] = await AsyncStorage.multiGet([
         '@GoBarber:token',
-        '@GoBarber:user']
-      );
+        '@GoBarber:user',
+      ]);
       if (token[1] && user[1]) {
         setData({ token: token[1], user: JSON.parse(user[1]) });
       }
@@ -53,7 +59,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 
     await AsyncStorage.multiSet([
       ['@GoBarber:token', token],
-      ['@GoBarber:user', JSON.stringify(user)]
+      ['@GoBarber:user', JSON.stringify(user)],
     ]);
 
     setData({ token, user });
@@ -71,7 +77,7 @@ export const AuthProvider: React.FC = ({ children }) => {
   );
 };
 
-export function useAuth(): AuthContextaData {
+export function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
 
   if (!context) {
